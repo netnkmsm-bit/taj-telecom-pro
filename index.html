@@ -101,7 +101,6 @@
     <header>TAJ TELECOM</header>
     <div id="sync-banner" class="sync-loading">⏳ ডাটা লোড করা হচ্ছে...</div>
 
-    <!-- ==================== SCREEN: HOME ==================== -->
     <div id="screen-home" class="screen active">
         <div class="stats-grid">
             <div class="stat-box sale">
@@ -128,7 +127,6 @@
         </div>
     </div>
 
-    <!-- ==================== SCREEN: SALES ==================== -->
     <div id="screen-sales" class="screen">
         <div class="card">
             <div class="card-title">📝 নতুন বিক্রয় এন্ট্রি</div>
@@ -188,7 +186,6 @@
         </div>
     </div>
 
-    <!-- ==================== SCREEN: BAKI ==================== -->
     <div id="screen-baki" class="screen">
         <div class="card">
             <div class="card-title">✍️ নতুন বাকি খাতা এন্ট্রি</div>
@@ -218,7 +215,6 @@
         </div>
     </div>
 
-    <!-- ==================== SCREEN: REQUIRED ==================== -->
     <div id="screen-required" class="screen">
         <div class="card">
             <div class="card-title">📁 নতুন ক্যাটাগরি যোগ করুন</div>
@@ -251,7 +247,6 @@
         </div>
     </div>
 
-    <!-- ==================== SCREEN: STOCK ==================== -->
     <div id="screen-stock" class="screen">
         <div class="card">
             <div class="card-title">📁 নতুন স্টক ক্যাটাগরি</div>
@@ -285,8 +280,6 @@
         </div>
     </div>
 
-    <!-- ==================== ALL MODAL POPUPS ==================== -->
-    <!-- Edit Sale Modal -->
     <div class="modal-overlay" id="modalSale">
         <div class="modal-box">
             <div class="modal-header"><span>✏️ এন্ট্রি এডিট করুন</span><button class="modal-close" onclick="closeModal('modalSale')">✕</button></div>
@@ -303,7 +296,6 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div class="modal-overlay" id="modalDeleteConfirm">
         <div class="modal-box" style="text-align: center;">
             <div class="modal-header"><span>⚠️ নিশ্চিতকরণ</span><button class="modal-close" onclick="closeModal('modalDeleteConfirm')">✕</button></div>
@@ -312,7 +304,6 @@
         </div>
     </div>
 
-    <!-- Edit Baki Modal -->
     <div class="modal-overlay" id="modalBaki">
         <div class="modal-box">
             <div class="modal-header"><span>✏️ খাতা আপডেট</span><button class="modal-close" onclick="closeModal('modalBaki')">✕</button></div>
@@ -326,7 +317,6 @@
         </div>
     </div>
 
-    <!-- Edit Required Category Modal -->
     <div class="modal-overlay" id="modalReqCat">
         <div class="modal-box">
             <div class="modal-header"><span>✏️ ক্যাটাগরি নাম পরিবর্তন</span><button class="modal-close" onclick="closeModal('modalReqCat')">✕</button></div>
@@ -336,7 +326,6 @@
         </div>
     </div>
 
-    <!-- Edit Required Item Modal -->
     <div class="modal-overlay" id="modalReqItem">
         <div class="modal-box">
             <div class="modal-header"><span>✏️ আইটেম এডিট</span><button class="modal-close" onclick="closeModal('modalReqItem')">✕</button></div>
@@ -350,7 +339,6 @@
         </div>
     </div>
 
-    <!-- Edit Stock Category Modal -->
     <div class="modal-overlay" id="modalStockCat">
         <div class="modal-box">
             <div class="modal-header"><span>✏️ স্টক ক্যাটাগরি নাম পরিবর্তন</span><button class="modal-close" onclick="closeModal('modalStockCat')">✕</button></div>
@@ -360,7 +348,6 @@
         </div>
     </div>
 
-    <!-- Edit Stock Item Modal -->
     <div class="modal-overlay" id="modalStockItem">
         <div class="modal-box">
             <div class="modal-header"><span>✏️ স্টক আইটেম এডিট</span><button class="modal-close" onclick="closeModal('modalStockItem')">✕</button></div>
@@ -375,7 +362,6 @@
         </div>
     </div>
 
-    <!-- FIXED BOTTOM NAVIGATION -->
     <nav>
         <button id="nav-home" class="nav-item active" onclick="switchScreen('home')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -399,9 +385,8 @@
         </button>
     </nav>
 
-    <!-- ==================== CORE JAVASCRIPT ==================== -->
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxaYngYrtNXrbsrjFZd5Tf6WGvrA0D7x6HnvCM6F6oT92-HQekJ1wtmwSnQJJNUmg/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzNx8quMGHNBOUSVoVQW3RsYG66YF-JnduWiBDkfvTuuEgA6ar7uA1F_KivPR-9yAE/exec";
 
         let database = JSON.parse(localStorage.getItem('taj_database')) || {}; 
         let stockDatabase = JSON.parse(localStorage.getItem('taj_stockDatabase')) || {}; 
@@ -410,7 +395,7 @@
 
         let selectedPaymentMethod = "নগদ"; let categoryToggleStates = {}; let activeBakiTargetIndex = null; let activeSaleTargetIndex = null; let deleteTargetIndex = null;
 
-        // 🇧🇩 বাংলাদেশের লোকাল টাইমজোন ডেট ফিক্সিং ফাংশন
+        // 🇧🇩 Bangladesher local timezone fixed function
         function getLocalDateString() {
             const now = new Date();
             const year = now.getFullYear();
