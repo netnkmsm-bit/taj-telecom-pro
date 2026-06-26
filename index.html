@@ -81,7 +81,6 @@
     </div>
 
     <div class="container">
-        <!-- HOME SCREEN -->
         <div id="screen-home" class="screen active">
             <div class="stats-grid">
                 <div class="stat-card positive" onclick="switchScreen('baki')"><div><p id="stat-pawn-val">৳ ০</p><h3>পাওনা (বাকি) ⇣</h3></div><span class="arrow">❯</span></div>
@@ -101,7 +100,6 @@
             </div>
         </div>
 
-        <!-- SALES SCREEN -->
         <div id="screen-sales" class="screen">
             <div class="form-box">
                 <div class="form-title">⚡ আজকের নতুন বিক্রয় এন্ট্রি করুন</div>
@@ -140,7 +138,6 @@
             <div id="sales-records-list"></div>
         </div>
 
-        <!-- REQUIRED SCREEN -->
         <div id="screen-required" class="screen">
             <div class="form-box">
                 <div class="form-title">📁 নতুন ক্যাটাগরি তৈরি করুন</div>
@@ -157,7 +154,6 @@
             <div id="required-materials-list"></div>
         </div>
 
-        <!-- STOCK SCREEN -->
         <div id="screen-stock" class="screen">
             <div class="form-box">
                 <div class="form-title">📁 নতুন স্টক ক্যাটাগরি তৈরি</div>
@@ -174,7 +170,6 @@
             <div id="stock-materials-list"></div>
         </div>
 
-        <!-- BAKI SCREEN -->
         <div id="screen-baki" class="screen">
             <div class="form-box">
                 <div class="form-title">📝 বাকির খাতা এন্ট্রি</div>
@@ -188,7 +183,6 @@
             <div id="baki-records-list"></div>
         </div>
 
-        <!-- MORE SCREEN -->
         <div id="screen-more" class="screen">
             <div class="list-group">
                 <div class="list-item" style="background:#fff; padding:15px; margin-bottom:10px; border-radius:8px; border:1px solid #eee; display:flex; justify-content:space-between; cursor:pointer;" onclick="fetchFromCloud()"><span>☁️ ক্লাউড থেকে ডেটা রিস্টোর করুন</span><span>🔄</span></div>
@@ -196,7 +190,6 @@
         </div>
     </div>
 
-    <!-- MODALS -->
     <div id="modalSale" class="modal-overlay"><div class="modal-box"><div class="modal-header">✏️ বিক্রয় সংশোধন</div><div style="margin-bottom:8px;"><input type="text" id="editSaleDetails" class="input-style"></div><div class="input-group"><input type="number" id="editSalePrice" class="input-style"><input type="number" id="editSaleProfit" class="input-style"></div><div style="margin-bottom:8px;"><select id="editSalePayment" class="select-style"><option value="নগদ">নগদ</option><option value="বিকাশ">বিকাশ</option><option value="বাকি">বাকি</option></select></div><div class="modal-footer"><button class="btn btn-outline" style="padding: 10px; border-radius: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer;" onclick="closeModal('modalSale')">বাতিল</button><button class="btn btn-blue" style="padding: 10px 15px; border-radius: 6px; background: #3498db; color: #fff; border: none; cursor: pointer;" onclick="saveSaleEdit()">আপডেট</button></div></div></div>
     <div id="modalBaki" class="modal-overlay"><div class="modal-box"><div class="modal-header">✏️ বাকি সংশোধন</div><div style="margin-bottom:8px;"><input type="text" id="editBakiName" class="input-style"></div><div style="margin-bottom:8px;"><input type="text" id="editBakiDetails" class="input-style"></div><div class="input-group"><input type="number" id="editBakiTotal" class="input-style"><input type="number" id="editBakiPaid" class="input-style"></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modalBaki')">বাতিল</button><button class="btn btn-green" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:6px;" onclick="saveBakiEdit()">আপডেট</button></div></div></div>
     
@@ -211,7 +204,6 @@
         </div>
     </div>
 
-    <!-- BOTTOM NAV -->
     <div class="nav-bottom">
         <div id="nav-home" class="nav-item active" onclick="switchScreen('home')"><div class="nav-item-icon">🏠</div><div>হোম</div></div>
         <div id="nav-sales" class="nav-item" onclick="switchScreen('sales')"><div class="nav-item-icon">💸</div><div>বিক্রয় এন্ট্রি</div></div>
@@ -221,8 +213,8 @@
         <div id="nav-more" class="nav-item" onclick="switchScreen('more')"><div class="nav-item-icon">⣿</div><div>আরও</div></div>
     </div>
     <script>
-        // 🔗 আপনার সরবরাহকৃত গুগল অ্যাপস স্ক্রিপ্ট লিংক এখানে ফিক্সড করে দেওয়া হয়েছে
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbySM0kX_lDsNNfTJONoKnwMjXV0BNEsETjrgLQIIPAGdTMK3Yt1XOcWA23FgP6uPwSU/exec";
+        // 🔗 আপনার সরবরাহকৃত নতুন গুগল অ্যাপস স্ক্রিপ্ট লিংক এখানে যুক্ত করা হলো
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxaYngYrtNXrbsrjFZd5Tf6WGvrA0D7x6HnvCM6F6oT92-HQekJ1wtmwSnQJJNUmg/exec";
 
         let database = JSON.parse(localStorage.getItem('taj_database')) || {}; 
         let stockDatabase = JSON.parse(localStorage.getItem('taj_stockDatabase')) || {}; 
@@ -240,7 +232,7 @@
             if(!banner) return;
             banner.className = "";
             if(status === 'loading') { banner.classList.add('sync-loading'); banner.innerText = "⏳ " + text; }
-            if(status === 'success') { banner.classList.add('sync-success'); banner.innerText = "☁ " + text; }
+            if(status === 'success') { banner.classList.add('sync-success'); banner.innerText = "☁️ " + text; }
             if(status === 'error') { banner.classList.add('sync-error'); banner.innerText = "❌ " + text; }
         }
 
@@ -521,7 +513,7 @@
                 const block = document.createElement('div'); block.className = 'category-block' + (categoryToggleStates[blockId] ? ' open' : ''); block.id = blockId;
                 const header = document.createElement('div'); header.className = 'category-header'; header.innerHTML = `<span onclick="handleToggle('${blockId}', '${textId}')">📁 ${cat}</span><span class="category-total" id="stock-sum-${cat}">৳ ০</span><span class="arrow-icon" id="${textId}">▼</span>`; block.appendChild(header);
                 const content = document.createElement('div'); content.className = 'category-content';
-                stockDatabase[cat].forEach(item => { let total = item.qty * item.cost; catCost += total; content.innerHTML += `<div class="item-row"><div class="item-left"><b>${item.name}</b><br><small>মজুদ: ${item.qty} পিস | কেনা: ৳${item.cost}</small></div><div>৳ ${total}</div></div>`; });
+                stockDatabase[cat].forEach(item => { let total = item.qty * item.cost; catCost += total; content.innerHTML += `<div class="item-row"><div class="item-left"><b>${item.name}</b><br><small>مজุด: ${item.qty} পিস | কেনা: ৳${item.cost}</small></div><div>৳ ${total}</div></div>`; });
                 grandCost += catCost; block.appendChild(content); container.appendChild(block); document.getElementById(`stock-sum-${cat}`).innerText = `৳ ${catCost}`;
             }
             if(grandCost > 0) { document.getElementById('stock-grand-bar').style.display = 'flex'; document.getElementById('stock-grand-val').innerText = `৳ ${grandCost}`; }
