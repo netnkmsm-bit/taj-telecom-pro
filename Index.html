@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TAJ TELECOM - Smart Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f5f9; color: #334155; padding-bottom: 70px; font-size: 13px; }
+        
+        /* Header & Banner Adjustments */
+        header { background-color: #1e293b; color: white; text-align: center; padding: 10px; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; position: sticky; top: 0; z-index: 100; }
+        
+        #sync-banner { padding: 6px 10px; text-align: center; font-size: 11px; font-weight: bold; display: block; width: 100%; transition: all 0.3s ease; }
+        .sync-loading { background-color: #fef08a; color: #854d0e; }
+        .sync-success { background-color: #bbf7d0; color: #166534; }
+        .sync-error { background-color: #fecaca; color: #991b1b; }
+
+        /* Navigation Bar (Fixed Bottom) */
+        nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: white; display: flex; justify-content: space-around; border-top: 1px solid #e2e8f0; z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .nav-item { flex: 1; text-align: center; padding: 8px 0; color: #64748b; text-decoration: none; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; cursor: pointer; }
+        .nav-item.active { color: #2563eb; font-weight: bold; border-top: 3px solid #2563eb; padding-top: 5px; }
+        .nav-item svg { width: 18px; height: 18px; }
+
+        /* Screens Layout */
+        .screen { display: none; padding: 10px; max-width: 480px; margin: 0 auto; }
+        .screen.active { display: block; }
+
+        /* Micro Mobile Cards */
+        .card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .card-title { font-size: 13px; font-weight: bold; color: #1e293b; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
+
+        /* Grid Home Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .stat-box { background: white; padding: 10px; border-radius: 8px; border-left: 4px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-box.sale { border-left-color: #10b981; }
+        .stat-box.profit { border-left-color: #8b5cf6; }
+        .stat-box.baki { border-left-color: #ef4444; }
+        .stat-box.stock { border-left-color: #f59e0b; }
+        .stat-label { font-size: 11px; color: #64748b; margin-bottom: 2px; }
+        .stat-val { font-size: 15px; font-weight: bold; color: #1e293b; }
+
+        /* Mini Form Elements */
+        .form-group { margin-bottom: 8px; }
+        .form-row { display: flex; gap: 6px; margin-bottom: 8px; }
+        .form-row .form-group { flex: 1; margin-bottom: 0; }
+        label { display: block; font-size: 11px; margin-bottom: 2px; color: #64748b; font-weight: 500; }
+        input, select, textarea { width: 100%; padding: 7px 9px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 5px; outline: none; background: #f8fafc; color: #334155; }
+        input:focus, select:focus { border-color: #3b82f6; background: #fff; }
+
+        /* Micro Buttons */
+        button, .btn { background-color: #2563eb; color: white; border: none; padding: 8px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px; transition: background 0.2s; }
+        button:active { background-color: #1d4ed8; }
+        
+        /* Payment Selection Group */
+        .payment-group { display: flex; gap: 5px; margin-bottom: 8px; }
+        .payment-btn { flex: 1; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 6px; font-size: 11px; font-weight: bold; border-radius: 6px; text-align: center; cursor: pointer; }
+        .payment-btn.selected { background: #1e293b; color: white; border-color: #1e293b; }
+
+        /* Rows List Item */
+        .item-row { background: #f8fafc; border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; font-size: 12px; }
+        .item-left { flex: 1; }
+        .item-name { font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 4px; }
+        .item-meta { font-size: 10px; color: #64748b; margin-top: 1px; }
+        .item-calc-price { font-weight: bold; color: #0f172a; font-size: 12px; }
+        
+        .badge { font-size: 9px; padding: 1px 4px; color: white; border-radius: 3px; font-weight: bold; display: inline-block; }
+        .baki-badge-red { font-size: 9px; padding: 1px 4px; background-color: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 3px; font-weight: bold; }
+
+        /* Action Buttons Inside Rows */
+        .action-btn-mini, .delete-btn-mini { background: #f1f5f9; color: #475569; width: auto; padding: 3px 6px; font-size: 10px; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-flex; }
+        .delete-btn-mini { background: #fee2e2; color: #ef4444; border-color: #fca5a5; margin-left: 4px; }
+
+        /* Expandable Category Blocks */
+        .category-block { margin-bottom: 6px; border: 1px solid #e2e8f0; border-radius: 6px; background: white; overflow: hidden; }
+        .category-header { background: #f8fafc; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 12px; cursor: pointer; border-bottom: 1px solid #e2e8f0; }
+        .category-total { font-size: 11px; color: #059669; margin-left: auto; margin-right: 8px; }
+        .arrow-icon { font-size: 10px; color: #64748b; transition: transform 0.2s; }
+        .category-content { display: none; padding: 6px; background: #ffffff; }
+        .category-block.open .category-content { display: block; }
+        .category-block.open .arrow-icon { transform: rotate(180deg); }
+
+        /* Grand Floating Total Footer Bar */
+        .grand-total-bar { background: #2563eb; color: white; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; margin-top: 8px; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
+
+        /* Modals popups */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+        .modal-box { background: white; border-radius: 8px; width: 100%; max-width: 340px; padding: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: modalIn 0.2s ease-out; }
+        @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-header { font-size: 13px; font-weight: bold; color: #1e293b; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-close { font-size: 16px; background: none; color: #94a3b8; width: auto; padding: 0; cursor: pointer; }
+        .modal-footer { display: flex; gap: 6px; margin-top: 10px; }
+        .modal-footer button { flex: 1; }
+        .btn-secondary { background: #e2e8f0; color: #475569; }
+
+        .empty-state { text-align: center; color: #94a3b8; padding: 15px 0; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+    <header>TAJ TELECOM</header>
+    <div id="sync-banner" class="sync-loading">⏳ ডাটা লোড করা হচ্ছে...</div>
+
+    <!-- ==================== SCREEN: HOME ==================== -->
+    <div id="screen-home" class="screen active">
+        <div class="stats-grid">
+            <div class="stat-box sale">
+                <div class="stat-label">আজকের বিক্রি</div>
+                <div class="stat-val" id="stat-sales-val">৳ 0</div>
+            </div>
+            <div class="stat-box profit">
+                <div class="stat-label">আজকের লাভ</div>
+                <div class="stat-val" id="stat-profit-val">৳ 0</div>
+            </div>
+            <div class="stat-box baki">
+                <div class="stat-label">মোট বাকি (খাতা)</div>
+                <div class="stat-val" id="stat-pawn-val">৳ 0</div>
+            </div>
+            <div class="stat-box stock">
+                <div class="stat-label">স্টক মাল (ক্রয়মূল্য)</div>
+                <div class="stat-val" id="stat-stock-val">৳ 0</div>
+            </div>
+        </div>
+
+        <div class="card" style="text-align: center; padding: 15px 10px;">
+            <h3 style="color: #1e293b; font-size: 14px; margin-bottom: 5px;">স্বাগতম, তাজ টেলিকম</h3>
+            <p style="color: #64748b; font-size: 11px; line-height: 1.5;">নিচের মেনুবার ব্যবহার করে আপনার দোকানের প্রতিদিনের বিক্রি এন্ট্রি, বাকি খাতা, প্রয়োজনীয় মালামালের তালিকা এবং বর্তমান ইনভেন্টরি স্টক ম্যানেজ করুন।</p>
+        </div>
+    </div>
+
+    <!-- ==================== SCREEN: SALES ==================== -->
+    <div id="screen-sales" class="screen">
+        <div class="card">
+            <div class="card-title">📝 নতুন বিক্রয় এন্ট্রি</div>
+            <div class="form-group">
+                <input type="text" id="sale-details" placeholder="মালের বিবরণ (যেমন: 12A Power IC, Display)">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <input type="number" id="sale-price" placeholder="বিক্রয় মূল্য (৳)">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="sale-profit" placeholder="লাভ (৳)">
+                </div>
+            </div>
+            <div class="payment-group">
+                <div class="payment-btn selected" id="pay-cash" onclick="setPaymentMethod('নগদ')">💵 নগদ</div>
+                <div class="payment-btn" id="pay-bkash" onclick="setPaymentMethod('বিকাশ')">📱 বিকাশ</div>
+                <div class="payment-btn" id="pay-baki" onclick="setPaymentMethod('বাকি')">🛑 বাকি</div>
+            </div>
+            <button onclick="addSaleRecord()">➕ এন্ট্রি করুন</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📊 বিক্রয় রিপোর্ট</div>
+            <div class="form-row" style="margin-bottom: 10px;">
+                <div style="flex: 1.2;">
+                    <select id="report-type-select" onchange="toggleFilterView()">
+                        <option value="TODAY">নির্দিষ্ট দিন (আজ)</option>
+                        <option value="MONTH">মাসিক রিপোর্ট</option>
+                    </select>
+                </div>
+                <div style="flex: 1;" id="month-dropdown-wrapper">
+                    <select id="report-month-select" onchange="renderSalesList()">
+                        <option value="TODAY">আজকের দিন</option>
+                        <option value="01">জানুয়ারি</option><option value="02">ফেব্রুয়ারি</option>
+                        <option value="03">মার্চ</option><option value="04">এপ্রিল</option>
+                        <option value="05">মে</option><option value="06">জুন</option>
+                        <option value="07">জুলাই</option><option value="08">আগস্ট</option>
+                        <option value="09">সেপ্টেম্বর</option><option value="10">অক্টোবর</option>
+                        <option value="11">নভেম্বর</option><option value="12">ডিসেম্বর</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="sales-records-list"></div>
+            
+            <div class="grand-total-bar" id="sales-grand-bar" style="display:none; flex-direction: column; gap: 2px; background: #1e293b;">
+                <div style="display:flex; justify-content:space-between; font-size:11px;">
+                    <span id="sales-total-title">মোট বিক্রি:</span>
+                    <span id="sales-grand-val">৳ 0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color: #10b981; border-top: 1px solid #334155; padding-top:2px;">
+                    <span id="profit-total-title">মোট লাভ:</span>
+                    <span id="sales-profit-grand-val">৳ 0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SCREEN: BAKI ==================== -->
+    <div id="screen-baki" class="screen">
+        <div class="card">
+            <div class="card-title">✍️ নতুন বাকি খাতা এন্ট্রি</div>
+            <div class="form-row">
+                <div class="form-group"><input type="text" id="baki-name" placeholder="কাস্টমারের নাম"></div>
+                <div class="form-group"><input type="tel" id="baki-mobile" placeholder="মোবাইল নম্বর"></div>
+            </div>
+            <div class="form-group"><input type="text" id="baki-address" placeholder="ঠিকানা"></div>
+            <div class="form-row">
+                <div class="form-group"><input type="text" id="baki-details" placeholder="মালের বিবরণ"></div>
+                <div class="form-group"><input type="date" id="baki-date"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><input type="number" id="baki-total-cost" placeholder="মোট টাকা (৳)"></div>
+                <div class="form-group"><input type="number" id="baki-paid" placeholder="জমা টাকা (৳)"></div>
+            </div>
+            <button onclick="addBakiRecord()">💾 খাতায় তুলুন</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📕 বাকি খাতার তালিকা</div>
+            <div id="baki-records-list"></div>
+            <div class="grand-total-bar" id="baki-grand-bar" style="display:none; background: #e11d48;">
+                <span>সর্বমোট পাওনা বাকি:</span>
+                <span id="baki-grand-val">৳ 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SCREEN: REQUIRED ==================== -->
+    <div id="screen-required" class="screen">
+        <div class="card">
+            <div class="card-title">📁 নতুন ক্যাটাগরি যোগ করুন</div>
+            <div class="form-row">
+                <input type="text" id="new-cat-name" placeholder="ক্যাটাগরির নাম (যেমন: IC, Display)">
+                <button style="width: auto; padding: 0 15px;" onclick="addCategory()">যোগ</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📌 মালামালের নাম যুক্ত করুন</div>
+            <div class="form-row">
+                <div style="flex:1;"><select id="product-cat-select"><option value="">-- ক্যাটাগরি --</option></select></div>
+                <div style="flex:1.5;"><input type="text" id="product-name" placeholder="মালের নাম"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><input type="number" id="product-qty" placeholder="পরিমাণ (পিস)"></div>
+                <div class="form-group"><input type="number" id="product-price" placeholder="আনুমানিক দাম (৳)"></div>
+            </div>
+            <button onclick="addProduct()">➕ তালিকায় রাখুন</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📝 প্রয়োজনীয় মালামালের লিস্ট</div>
+            <div id="required-materials-list"></div>
+            <div class="grand-total-bar" id="req-grand-bar" style="display:none; background: #2563eb;">
+                <span>মোট সম্ভাব্য খরচ:</span>
+                <span id="req-grand-val">৳ 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SCREEN: STOCK ==================== -->
+    <div id="screen-stock" class="screen">
+        <div class="card">
+            <div class="card-title">📁 নতুন স্টক ক্যাটাগরি</div>
+            <div class="form-row">
+                <input type="text" id="new-stock-cat-name" placeholder="স্টক ক্যাটাগরি (যেমন: Touch, Battery)">
+                <button style="width: auto; padding: 0 15px;" onclick="addStockCategory()">যোগ</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📦 ইনভেন্টরি স্টক এন্ট্রি</div>
+            <div class="form-row">
+                <div style="flex:1;"><select id="stock-cat-select"><option value="">-- ক্যাটাগরি --</option></select></div>
+                <div style="flex:1.5;"><input type="text" id="stock-item-name" placeholder="আইটেমের নাম"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><input type="number" id="stock-item-qty" placeholder="পরিমাণ (পিস)"></div>
+                <div class="form-group"><input type="number" id="stock-item-cost" placeholder="কেনা দাম (৳)"></div>
+                <div class="form-group"><input type="number" id="stock-item-sale" placeholder="বিক্রি দাম (৳)"></div>
+            </div>
+            <button onclick="addStockItem()">📥 স্টকে যুক্ত করুন</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🏪 বর্তমান দোকান স্টক</div>
+            <div id="stock-materials-list"></div>
+            <div class="grand-total-bar" id="stock-grand-bar" style="display:none; background: #ea580c;">
+                <span>স্টকের মোট পুঁজি (ক্রয়মূল্য):</span>
+                <span id="stock-grand-val">৳ 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== ALL MODAL POPUPS ==================== -->
+    <!-- Edit Sale Modal -->
+    <div class="modal-overlay" id="modalSale">
+        <div class="modal-box">
+            <div class="modal-header"><span>✏️ এন্ট্রি এডিট করুন</span><button class="modal-close" onclick="closeModal('modalSale')">✕</button></div>
+            <div class="form-group"><label>বিবরণ</label><input type="text" id="editSaleDetails"></div>
+            <div class="form-row">
+                <div class="form-group"><label>বিক্রি মূল্য</label><input type="number" id="editSalePrice"></div>
+                <div class="form-group"><label>লাভ</label><input type="number" id="editSaleProfit"></div>
+            </div>
+            <div class="form-group">
+                <label>পেমেন্ট মেথড</label>
+                <select id="editSalePayment"><option value="নগদ">নগদ</option><option value="বিকাশ">বিকাশ</option><option value="বাকি">বাকি</option></select>
+            </div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modalSale')">বাতিল</button><button onclick="saveSaleEdit()">সেভ করুন</button></div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="modalDeleteConfirm">
+        <div class="modal-box" style="text-align: center;">
+            <div class="modal-header"><span>⚠️ নিশ্চিতকরণ</span><button class="modal-close" onclick="closeModal('modalDeleteConfirm')">✕</button></div>
+            <p style="font-size:12px; margin: 10px 0; color: #475569;">আপনি কি নিশ্চিতভাবে এই রেকর্ডটি মুছে ফেলতে চান?</p>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modalDeleteConfirm')">না</button><button style="background:#ef4444;" onclick="executeDeleteSale()">হ্যাঁ, মুছুন</button></div>
+        </div>
+    </div>
+
+    <!-- Edit Baki Modal -->
+    <div class="modal-overlay" id="modalBaki">
+        <div class="modal-box">
+            <div class="modal-header"><span>✏️ খাতা আপডেট</span><button class="modal-close" onclick="closeModal('modalBaki')">✕</button></div>
+            <div class="form-group"><label>কাস্টমারের নাম</label><input type="text" id="editBakiName"></div>
+            <div class="form-group"><label>মালের বিবরণ</label><input type="text" id="editBakiDetails"></div>
+            <div class="form-row">
+                <div class="form-group"><label>মোট টাকা</label><input type="number" id="editBakiTotal"></div>
+                <div class="form-group"><label>জমা টাকা</label><input type="number" id="editBakiPaid"></div>
+            </div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modalBaki')">বাতিল</button><button onclick="saveBakiEdit()">হিসাব সেভ</button></div>
+        </div>
+    </div>
+
+    <!-- Edit Required Category Modal -->
+    <div class="modal-overlay" id="modalReqCat">
+        <div class="modal-box">
+            <div class="modal-header"><span>✏️ ক্যাটাগরি নাম পরিবর্তন</span><button class="modal-close" onclick="closeModal('modalReqCat')">✕</button></div>
+            <input type="hidden" id="oldReqCatName">
+            <div class="form-group"><input type="text" id="editReqCatName"></div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modalReqCat')">বাতিল</button><button onclick="saveReqCategoryEdit()">পরিবর্তন</button></div>
+        </div>
+    </div>
+
+    <!-- Edit Required Item Modal -->
+    <div class="modal-overlay" id="modalReqItem">
+        <div class="modal-box">
+            <div class="modal-header"><span>✏️ আইটেম এডিট</span><button class="modal-close" onclick="closeModal('modalReqItem')">✕</button></div>
+            <input type="hidden" id="editReqItemCat"><input type="hidden" id="editReqItemIndex">
+            <div class="form-group"><label>মালের নাম</label><input type="text" id="editReqItemName"></div>
+            <div class="form-row">
+                <div class="form-group"><label>পরিমাণ</label><input type="number" id="editReqItemQty"></div>
+                <div class="form-group"><label>দাম</label><input type="number" id="editReqItemPrice"></div>
+            </div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modalReqItem')">বাতিল</button><button onclick="saveReqItemEdit()">আপডেট</button></div>
+        </div>
+    </div>
+
+    <!-- Edit Stock Category Modal -->
+    <div class="modal-overlay" id="modalStockCat">
+        <div class="modal-box">
+            <div class="modal-header"><span>✏️ স্টক ক্যাটাগরি নাম পরিবর্তন</span><button class="modal-close" onclick="closeModal('modalStockCat')">✕</button></div>
+            <input type="hidden" id="oldStockCatName">
+            <div class="form-group"><input type="text" id="editStockCatName"></div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modalStockCat')">বাতিল</button><button onclick="saveStockCategoryEdit()">পরিবর্তন</button></div>
+        </div>
+    </div>
+
+    <!-- Edit Stock Item Modal -->
+    <div class="modal-overlay" id="modalStockItem">
+        <div class="modal-box">
+            <div class="modal-header"><span>✏️ স্টক আইটেম এডিট</span><button class="modal-close" onclick="closeModal('modalStockItem')">✕</button></div>
+            <input type="hidden" id="editStockItemCat"><input type="hidden" id="editStockItemIndex">
+            <div class="form-group"><label>আইটেমের নাম</label><input type="text" id="editStockItemName"></div>
+            <div class="form-row">
+                <div class="form-group"><label>পরিমাণ</label><input type="number" id="editStockItemQty"></div>
+                <div class="form-group"><label>কেনা দাম</label><input type="number" id="editStockItemCost"></div>
+                <div class="form-group"><label>বিক্রি দাম</label><input type="number" id="editStockItemSale"></div>
+            </div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('modalStockItem')">বাতিল</button><button onclick="saveStockItemEdit()">আপডেট</button></div>
+        </div>
+    </div>
+
+    <!-- FIXED BOTTOM NAVIGATION -->
+    <nav>
+        <button id="nav-home" class="nav-item active" onclick="switchScreen('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            হোম
+        </button>
+        <button id="nav-sales" class="nav-item" onclick="switchScreen('sales')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            বিক্রি
+        </button>
+        <button id="nav-baki" class="nav-item" onclick="switchScreen('baki')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            বাকি খাতা
+        </button>
+        <button id="nav-required" class="nav-item" onclick="switchScreen('required')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            প্রয়োজনীয়
+        </button>
+        <button id="nav-stock" class="nav-item" onclick="switchScreen('stock')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            স্টক
+        </button>
+    </nav>
+
+    <!-- ==================== CORE JAVASCRIPT ==================== -->
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxaYngYrtNXrbsrjFZd5Tf6WGvrA0D7x6HnvCM6F6oT92-HQekJ1wtmwSnQJJNUmg/exec";
+
+        let database = JSON.parse(localStorage.getItem('taj_database')) || {}; 
+        let stockDatabase = JSON.parse(localStorage.getItem('taj_stockDatabase')) || {}; 
+        let bakiRecords = JSON.parse(localStorage.getItem('taj_bakiRecords')) || []; 
+        let saleRecords = JSON.parse(localStorage.getItem('taj_saleRecords')) || []; 
+
+        let selectedPaymentMethod = "নগদ"; let categoryToggleStates = {}; let activeBakiTargetIndex = null; let activeSaleTargetIndex = null; let deleteTargetIndex = null;
+
+        // 🇧🇩 বাংলাদেশের লোকাল টাইমজোন ডেট ফিক্সিং ফাংশন
+        function getLocalDateString() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function updateSyncStatus(status, text) {
+            const banner = document.getElementById('sync-banner'); if(!banner) return; banner.className = "";
+            if(status === 'loading') { banner.classList.add('sync-loading'); banner.innerText = "⏳ " + text; }
+            if(status === 'success') { banner.classList.add('sync-success'); banner.innerText = "☁️ " + text; }
+            if(status === 'error') { banner.classList.add('sync-error'); banner.innerText = "❌ " + text; }
+        }
+
+        function saveAndSync() {
+            localStorage.setItem('taj_database', JSON.stringify(database));
+            localStorage.setItem('taj_stockDatabase', JSON.stringify(stockDatabase));
+            localStorage.setItem('taj_bakiRecords', JSON.stringify(bakiRecords));
+            localStorage.setItem('taj_saleRecords', JSON.stringify(saleRecords));
+            updateSyncStatus('loading', 'ড্রাইভে সেভ হচ্ছে...');
+            fetch(WEB_APP_URL, {
+                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sales: saleRecords, baki: bakiRecords, required: database, stock: stockDatabase })
+            }).then(() => { updateSyncStatus('success', 'ড্রাইভ ব্যাকআপ সফল'); }).catch(err => { updateSyncStatus('error', 'ব্যাকআপ ফেল্ড'); console.error(err); });
+        }
+
+        function fetchFromCloud() {
+            updateSyncStatus('loading', 'ড্রাইভ থেকে লোড হচ্ছে...');
+            fetch(WEB_APP_URL).then(res => res.json()).then(data => {
+                if(data) {
+                    if(data.sales) saleRecords = data.sales; if(data.baki) bakiRecords = data.baki; if(data.required) database = data.required; if(data.stock) stockDatabase = data.stock;
+                    localStorage.setItem('taj_database', JSON.stringify(database)); localStorage.setItem('taj_stockDatabase', JSON.stringify(stockDatabase)); localStorage.setItem('taj_bakiRecords', JSON.stringify(bakiRecords)); localStorage.setItem('taj_saleRecords', JSON.stringify(saleRecords));
+                    syncDropdowns(); renderRequiredList(); renderStockList(); renderBakiList(); renderSalesList(); updateHomeStats(); updateSyncStatus('success', 'ড্রাইভ ডেটা সিঙ্কড');
+                }
+            }).catch(err => { updateSyncStatus('error', 'লোড করা যায়নি'); console.error(err); });
+        }
+
+        window.onload = function() {
+            const today = getLocalDateString(); if(document.getElementById('baki-date')) document.getElementById('baki-date').value = today;
+            syncDropdowns(); renderRequiredList(); renderStockList(); renderBakiList(); renderSalesList(); updateHomeStats(); fetchFromCloud();
+        };
+
+        function updateHomeStats() {
+            const todayString = getLocalDateString(); let todaySaleSum = 0; let todayProfitSum = 0;
+            saleRecords.forEach(r => { if(r.date === todayString) { todaySaleSum += r.price; todayProfitSum += r.profit; } });
+            document.getElementById('stat-sales-val').innerText = `৳ ${todaySaleSum}`; document.getElementById('stat-profit-val').innerText = `৳ ${todayProfitSum}`;
+            let grandDueTotal = 0; bakiRecords.forEach(item => { grandDueTotal += Number(item.due || 0); }); document.getElementById('stat-pawn-val').innerText = `৳ ${grandDueTotal}`;
+            let grandCost = 0; for(let cat in stockDatabase) { stockDatabase[cat].forEach(item => { grandCost += (item.qty * item.cost); }); } document.getElementById('stat-stock-val').innerText = `৳ ${grandCost}`;
+        }
+
+        function handleToggle(blockId, textElementId) {
+            const block = document.getElementById(blockId); const arrowText = document.getElementById(textElementId); if (!block || !arrowText) return;
+            block.classList.toggle('open'); categoryToggleStates[blockId] = block.classList.contains('open');
+            arrowText.innerText = block.classList.contains('open') ? "▲" : "▼";
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function setPaymentMethod(method) {
+            selectedPaymentMethod = method; document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('selected'));
+            if(method === 'নগদ') document.getElementById('pay-cash').classList.add('selected'); if(method === 'বিকাশ') document.getElementById('pay-bkash').classList.add('selected'); if(method === 'বাকি') document.getElementById('pay-baki').classList.add('selected');
+        }
+
+        function toggleFilterView() {
+            const type = document.getElementById('report-type-select').value;
+            const dropdown = document.getElementById('report-month-select');
+            if(type === "TODAY") { dropdown.value = "TODAY"; } else if(dropdown.value === "TODAY") { dropdown.value = String(new Date().getMonth() + 1).padStart(2, '0'); }
+            renderSalesList();
+        }
+
+        // ==================== SALES LOGIC ====================
+        function addSaleRecord() {
+            const details = document.getElementById('sale-details').value.trim(); const price = parseFloat(document.getElementById('sale-price').value) || 0; const profit = parseFloat(document.getElementById('sale-profit').value) || 0; const todayDate = getLocalDateString();
+            if(details === "" || price === 0) { alert("বিবরণ এবং মূল্য দিন!"); return; }
+            saleRecords.push({ id: "S-" + Date.now(), details, price, profit, payment: selectedPaymentMethod, date: todayDate });
+            document.getElementById('sale-details').value = ""; document.getElementById('sale-price').value = ""; document.getElementById('sale-profit').value = "";
+            setPaymentMethod('নগদ'); renderSalesList(); updateHomeStats(); saveAndSync();
+        }
+        function triggerEditSale(index) {
+            activeSaleTargetIndex = index; const item = saleRecords[index];
+            document.getElementById('editSaleDetails').value = item.details; document.getElementById('editSalePrice').value = item.price; document.getElementById('editSaleProfit').value = item.profit; document.getElementById('editSalePayment').value = item.payment;
+            openModal('modalSale');
+        }
+        function saveSaleEdit() {
+            if(activeSaleTargetIndex === null) return;
+            saleRecords[activeSaleTargetIndex].details = document.getElementById('editSaleDetails').value.trim(); saleRecords[activeSaleTargetIndex].price = parseFloat(document.getElementById('editSalePrice').value) || 0; saleRecords[activeSaleTargetIndex].profit = parseFloat(document.getElementById('editSaleProfit').value) || 0; saleRecords[activeSaleTargetIndex].payment = document.getElementById('editSalePayment').value;
+            closeModal('modalSale'); renderSalesList(); updateHomeStats(); saveAndSync();
+        }
+        function deleteSaleRecord(index) { deleteTargetIndex = index; openModal('modalDeleteConfirm'); }
+        function executeDeleteSale() { if(deleteTargetIndex !== null) { saleRecords.splice(deleteTargetIndex, 1); deleteTargetIndex = null; closeModal('modalDeleteConfirm'); renderSalesList(); updateHomeStats(); saveAndSync(); } }
+
+        function renderSalesList() {
+            const container = document.getElementById('sales-records-list'); if(!container) return; container.innerHTML = "";
+            const filterType = document.getElementById('report-month-select').value; const todayString = getLocalDateString();
+            let grandSale = 0; let grandProfit = 0; let matchCount = 0;
+            if(filterType === "TODAY") { document.getElementById('sales-total-title').innerText = "আজকের মোট বিক্রি:"; document.getElementById('profit-total-title').innerText = "আজকের মোট লাভ:"; document.getElementById('report-type-select').value = "TODAY"; } 
+            else { const monthNames = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"]; document.getElementById('sales-total-title').innerText = monthNames[parseInt(filterType) - 1] + " মাসের বিক্রি:"; document.getElementById('profit-total-title').innerText = monthNames[parseInt(filterType) - 1] + " মাসের লাভ:"; document.getElementById('report-type-select').value = "MONTH"; }
+            let groupedItems = {};
+            saleRecords.forEach((item, index) => {
+                let isMatch = false; if (filterType === "TODAY") { if (item.date === todayString) isMatch = true; } else { if (item.date && item.date.split('-')[1] === filterType) isMatch = true; } if (!isMatch) return;
+                matchCount++; grandSale += item.price; grandProfit += item.profit; if (!groupedItems[item.date]) { groupedItems[item.date] = []; } groupedItems[item.date].push({ item, index });
+            });
+            if(matchCount === 0) { document.getElementById('sales-grand-bar').style.display = 'none'; container.innerHTML = `<div class="empty-state"><p>কোনো রেকর্ড পাওয়া যায়নি।</p></div>`; } 
+            else {
+                document.getElementById('sales-grand-bar').style.display = 'flex'; document.getElementById('sales-grand-val').innerText = `৳ ${grandSale}`; document.getElementById('sales-profit-grand-val').innerText = `৳ ${grandProfit}`;
+                const sortedDates = Object.keys(groupedItems).sort((a, b) => b.localeCompare(a));
+                sortedDates.forEach(date => {
+                    const dateParts = date.split('-'); const displayDate = dateParts[2] ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : date;
+                    const headerRow = document.createElement('div'); headerRow.style.cssText = "background: #e2e8f0; padding: 4px 8px; margin: 10px 0 5px 0; border-radius: 4px; font-size: 11px; font-weight: bold; color: #334155; border-left: 3px solid #2563eb;"; headerRow.innerHTML = `📅 তারিখ: ${displayDate}`; container.appendChild(headerRow);
+                    groupedItems[date].forEach(({ item, index }) => {
+                        let badgeColor = item.payment === 'নগদ' ? '#10b981' : (item.payment === 'বিকাশ' ? '#e11d48' : '#f59e0b');
+                        const row = document.createElement('div'); row.className = 'item-row';
+                        row.innerHTML = `<div class="item-left"><div class="item-name">📦 ${item.details} <span class="badge" style="background:${badgeColor};">${item.payment}</span></div><div class="item-meta"><span style="color:#10b981; font-weight:bold;">লাভ: ৳${item.profit}</span></div></div><div class="item-right" style="display:flex; flex-direction: column; align-items: flex-end; gap:3px;"><div class="item-calc-price">৳ ${item.price}</div><div><button class="action-btn-mini" onclick="triggerEditSale(${index})">✏️</button><button class="delete-btn-mini" onclick="deleteSaleRecord(${index})">🗑️</button></div></div>`;
+                        container.appendChild(row);
+                    });
+                });
+            }
+        }
+
+        // ==================== BAKI LOGIC ====================
+        function addBakiRecord() {
+            const name = document.getElementById('baki-name').value.trim(); const mobile = document.getElementById('baki-mobile').value.trim(); const address = document.getElementById('baki-address').value.trim(); const date = document.getElementById('baki-date').value; const details = document.getElementById('baki-details').value.trim(); const total = parseFloat(document.getElementById('baki-total-cost').value) || 0; const paid = parseFloat(document.getElementById('baki-paid').value) || 0;
+            if(name === "" || total === 0) { alert("নাম ও মোট টাকা দিন!"); return; }
+            bakiRecords.push({ id: "B-" + Date.now(), name, mobile, address, date, details, total, paid, due: total - paid });
+            document.getElementById('baki-name').value = ""; document.getElementById('baki-mobile').value = ""; document.getElementById('baki-address').value = ""; document.getElementById('baki-details').value = ""; document.getElementById('baki-total-cost').value = ""; document.getElementById('baki-paid').value = "";
+            renderBakiList(); updateHomeStats(); saveAndSync();
+        }
+        function triggerEditBaki(index) {
+            activeBakiTargetIndex = index; const item = bakiRecords[index];
+            document.getElementById('editBakiName').value = item.name; document.getElementById('editBakiDetails').value = item.details; document.getElementById('editBakiTotal').value = item.total; document.getElementById('editBakiPaid').value = item.paid;
+            openModal('modalBaki');
+        }
+        function saveBakiEdit() {
+            if(activeBakiTargetIndex === null) return;
+            const name = document.getElementById('editBakiName').value.trim(); const details = document.getElementById('editBakiDetails').value.trim(); const total = parseFloat(document.getElementById('editBakiTotal').value) || 0; const paid = parseFloat(document.getElementById('editBakiPaid').value) || 0;
+            if(name === "") return; bakiRecords[activeBakiTargetIndex] = { ...bakiRecords[activeBakiTargetIndex], name, details, total, paid, due: total - paid };
+            closeModal('modalBaki'); renderBakiList(); updateHomeStats(); saveAndSync();
+        }
+        function renderBakiList() {
+            const container = document.getElementById('baki-records-list'); if(!container) return; container.innerHTML = ""; let grandDueTotal = 0;
+            if(bakiRecords.length === 0) { document.getElementById('baki-grand-bar').style.display = 'none'; container.innerHTML = `<div class="empty-state"><p>কোনো রেকর্ড পাওয়া যায়নি।</p></div>`; return; }
+            bakiRecords.forEach((item, index) => { grandDueTotal += Number(item.due || 0); const row = document.createElement('div'); row.className = 'item-row'; row.innerHTML = `<div class="item-left"><div class="item-name" style="color:#ef4444;">👤 ${item.name} <span class="baki-badge-red">বাকি</span></div><div class="item-meta">📱 মোবা: <b>${item.mobile || 'নেই'}</b> | 📦 মাল: ${item.details}</div><div class="item-meta" style="margin-top:2px;">মোট: ৳${item.total} | জমা: ৳${item.paid}</div></div><div class="item-right" style="display:flex; flex-direction: column; align-items: flex-end; gap:4px;"><div class="item-calc-price" style="color:#ef4444;">৳ ${item.due}</div><button class="action-btn-mini" onclick="triggerEditBaki(${index})">✏️</button></div>`; container.appendChild(row); });
+            document.getElementById('baki-grand-bar').style.display = 'flex'; document.getElementById('baki-grand-val').innerText = `৳ ${grandDueTotal}`;
+        }
+
+        // ==================== REQUIRED MATERIALS ====================
+        function addCategory() { 
+            const input = document.getElementById('new-cat-name'); if(input.value.trim() === "") return; 
+            if(!database[input.value.trim()]) database[input.value.trim()] = []; input.value = ""; 
+            syncDropdowns(); renderRequiredList(); saveAndSync();
+        }
+        function addProduct() {
+            const cat = document.getElementById('product-cat-select').value; const name = document.getElementById('product-name').value.trim(); const qty = parseInt(document.getElementById('product-qty').value) || 0; const price = parseFloat(document.getElementById('product-price').value) || 0;
+            if(!cat || name === "") return; database[cat].push({ name, qty, price }); 
+            document.getElementById('product-name').value = ""; document.getElementById('product-qty').value = ""; document.getElementById('product-price').value = ""; 
+            categoryToggleStates['req-block-' + cat] = true; renderRequiredList(); saveAndSync();
+        }
+        function triggerEditReqCategory(cat) { document.getElementById('oldReqCatName').value = cat; document.getElementById('editReqCatName').value = cat; openModal('modalReqCat'); }
+        function saveReqCategoryEdit() {
+            const oldCat = document.getElementById('oldReqCatName').value; const newCat = document.getElementById('editReqCatName').value.trim();
+            if(newCat === "" || oldCat === newCat) { closeModal('modalReqCat'); return; }
+            if(database[newCat]) { alert("এই নামে ক্যাটাগরি অলরেডি আছে!"); return; }
+            database[newCat] = database[oldCat]; delete database[oldCat];
+            closeModal('modalReqCat'); syncDropdowns(); renderRequiredList(); saveAndSync();
+        }
+        function triggerEditReqItem(cat, index) {
+            const item = database[cat][index]; document.getElementById('editReqItemCat').value = cat; document.getElementById('editReqItemIndex').value = index;
+            document.getElementById('editReqItemName').value = item.name; document.getElementById('editReqItemQty').value = item.qty; document.getElementById('editReqItemPrice').value = item.price;
+            openModal('modalReqItem');
+        }
+        function saveReqItemEdit() {
+            const cat = document.getElementById('editReqItemCat').value; const index = document.getElementById('editReqItemIndex').value;
+            const name = document.getElementById('editReqItemName').value.trim(); const qty = parseInt(document.getElementById('editReqItemQty').value) || 0; const price = parseFloat(document.getElementById('editReqItemPrice').value) || 0;
+            if(name === "") return; database[cat][index] = { name, qty, price };
+            closeModal('modalReqItem'); renderRequiredList(); saveAndSync();
+        }
+        function renderRequiredList() {
+            const container = document.getElementById('required-materials-list'); if(!container) return; container.innerHTML = ""; let grandTotal = 0;
+            for(let cat in database) {
+                let catSum = 0; const blockId = 'req-block-' + cat; const textId = 'req-arrow-' + cat;
+                const block = document.createElement('div'); block.className = 'category-block' + (categoryToggleStates[blockId] ? ' open' : ''); block.id = blockId;
+                const header = document.createElement('div'); header.className = 'category-header'; 
+                header.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:5px; flex:1;" onclick="handleToggle('${blockId}', '${textId}')">
+                        <span style="color:#2563eb;">📁 ${cat}</span>
+                        <button class="action-btn-mini" onclick="event.stopPropagation(); triggerEditReqCategory('${cat}')">✏️</button>
+                    </div>
+                    <span class="category-total" id="req-sum-${cat}">৳ 0</span>
+                    <span class="arrow-icon" id="${textId}" onclick="handleToggle('${blockId}', '${textId}')">▼</span>`; 
+                block.appendChild(header);
+                const content = document.createElement('div'); content.className = 'category-content';
+                database[cat].forEach((item, index) => { 
+                    let total = item.qty * item.price; catSum += total; 
+                    content.innerHTML += `<div class="item-row"><div class="item-left"><b>${item.name}</b><br><small>${item.qty} পিস x ৳${item.price}</small></div><div class="item-right" style="display:flex; align-items:center; gap:6px;"><div>৳ ${total}</div><button class="action-btn-mini" onclick="triggerEditReqItem('${cat}', ${index})">✏️</button></div></div>`; 
+                });
+                grandTotal += catSum; block.appendChild(content); container.appendChild(block); document.getElementById(`req-sum-${cat}`).innerText = `৳ ${catSum}`;
+            }
+            if(grandTotal > 0) { document.getElementById('req-grand-bar').style.display = 'flex'; document.getElementById('req-grand-val').innerText = `৳ ${grandTotal}`; } else { document.getElementById('req-grand-bar').style.display = 'none'; }
+        }
+
+        // ==================== STOCK MATERIALS ====================
+        function addStockCategory() { 
+            const input = document.getElementById('new-stock-cat-name'); if(input.value.trim() === "") return; 
+            if(!stockDatabase[input.value.trim()]) stockDatabase[input.value.trim()] = []; input.value = ""; 
+            syncDropdowns(); renderStockList(); saveAndSync();
+        }
+        function addStockItem() {
+            const cat = document.getElementById('stock-cat-select').value; const name = document.getElementById('stock-item-name').value.trim(); const qty = parseInt(document.getElementById('stock-item-qty').value) || 0; const cost = parseFloat(document.getElementById('stock-item-cost').value) || 0; const sale = parseFloat(document.getElementById('stock-item-sale').value) || 0;
+            if(!cat || name === "") return; stockDatabase[cat].push({ name, qty, cost, sale }); 
+            document.getElementById('stock-item-name').value = ""; document.getElementById('stock-item-qty').value = ""; document.getElementById('stock-item-cost').value = ""; document.getElementById('stock-item-sale').value = ""; 
+            categoryToggleStates['stock-block-' + cat] = true; renderStockList(); updateHomeStats(); saveAndSync();
+        }
+        function triggerEditStockCategory(cat) { document.getElementById('oldStockCatName').value = cat; document.getElementById('editStockCatName').value = cat; openModal('modalStockCat'); }
+        function saveStockCategoryEdit() {
+            const oldCat = document.getElementById('oldStockCatName').value; const newCat = document.getElementById('editStockCatName').value.trim();
+            if(newCat === "" || oldCat === newCat) { closeModal('modalStockCat'); return; }
+            if(stockDatabase[newCat]) { alert("এই নামে ক্যাটাগরি অলরেডি আছে!"); return; }
+            stockDatabase[newCat] = stockDatabase[oldCat]; delete stockDatabase[oldCat];
+            closeModal('modalStockCat'); syncDropdowns(); renderStockList(); saveAndSync();
+        }
+        function triggerEditStockItem(cat, index) {
+            const item = stockDatabase[cat][index]; document.getElementById('editStockItemCat').value = cat; document.getElementById('editStockItemIndex').value = index;
+            document.getElementById('editStockItemName').value = item.name; document.getElementById('editStockItemQty').value = item.qty; document.getElementById('editStockItemCost').value = item.cost; document.getElementById('editStockItemSale').value = item.sale;
+            openModal('modalStockItem');
+        }
+        function saveStockItemEdit() {
+            const cat = document.getElementById('editStockItemCat').value; const index = document.getElementById('editStockItemIndex').value;
+            const name = document.getElementById('editStockItemName').value.trim(); const qty = parseInt(document.getElementById('editStockItemQty').value) || 0; const cost = parseFloat(document.getElementById('editStockItemCost').value) || 0; const sale = parseFloat(document.getElementById('editStockItemSale').value) || 0;
+            if(name === "") return; stockDatabase[cat][index] = { name, qty, cost, sale };
+            closeModal('modalStockItem'); renderStockList(); updateHomeStats(); saveAndSync();
+        }
+        function renderStockList() {
+            const container = document.getElementById('stock-materials-list'); if(!container) return; container.innerHTML = ""; let grandCost = 0;
+            for(let cat in stockDatabase) {
+                let catCost = 0; const blockId = 'stock-block-' + cat; const textId = 'stock-arrow-' + cat;
+                const block = document.createElement('div'); block.className = 'category-block' + (categoryToggleStates[blockId] ? ' open' : ''); block.id = blockId;
+                const header = document.createElement('div'); header.className = 'category-header'; 
+                header.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:5px; flex:1;" onclick="handleToggle('${blockId}', '${textId}')">
+                        <span style="color:#ea580c;">📁 ${cat}</span>
+                        <button class="action-btn-mini" onclick="event.stopPropagation(); triggerEditStockCategory('${cat}')">✏️</button>
+                    </div>
+                    <span class="category-total" id="stock-sum-${cat}">৳ 0</span>
+                    <span class="arrow-icon" id="${textId}" onclick="handleToggle('${blockId}', '${textId}')">▼</span>`; 
+                block.appendChild(header);
+                const content = document.createElement('div'); content.className = 'category-content';
+                stockDatabase[cat].forEach((item, index) => { 
+                    let total = item.qty * item.cost; catCost += total; 
+                    content.innerHTML += `<div class="item-row"><div class="item-left"><b>${item.name}</b><br><small>মজুদ: ${item.qty} পিস | কেনা: ৳${item.cost} | বিক্রি: ৳${item.sale}</small></div><div class="item-right" style="display:flex; align-items:center; gap:6px;"><div>৳ ${total}</div><button class="action-btn-mini" onclick="triggerEditStockItem('${cat}', ${index})">✏️</button></div></div>`; 
+                });
+                grandCost += catCost; block.appendChild(content); container.appendChild(block); document.getElementById(`stock-sum-${cat}`).innerText = `৳ ${catCost}`;
+            }
+            if(grandCost > 0) { document.getElementById('stock-grand-bar').style.display = 'flex'; document.getElementById('stock-grand-val').innerText = `৳ ${grandCost}`; } else { document.getElementById('stock-grand-bar').style.display = 'none'; }
+        }
+
+        function syncDropdowns() {
+            const rSel = document.getElementById('product-cat-select'); if(rSel) { rSel.innerHTML = '<option value="">-- ক্যাটাগরি --</option>'; for(let c in database) rSel.innerHTML += `<option value="${c}">${c}</option>`; }
+            const sSel = document.getElementById('stock-cat-select'); if(sSel) { sSel.innerHTML = '<option value="">-- ক্যাটাগরি --</option>'; for(let c in stockDatabase) sSel.innerHTML += `<option value="${c}">${c}</option>`; }
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); if(document.getElementById('screen-' + screenId)) document.getElementById('screen-' + screenId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(document.getElementById('nav-' + screenId)) document.getElementById('nav-' + screenId).classList.add('active');
+            if(screenId === 'sales') renderSalesList(); updateHomeStats(); window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
