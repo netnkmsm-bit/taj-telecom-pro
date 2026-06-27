@@ -98,6 +98,21 @@
 </head>
 <body>
 
+    <!-- 🔒 পিন লক স্ক্রিন ওভারলে (ম্যাচিং ডার্ক থিম সহ) -->
+    <div id="login-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:#1e293b; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+        <div style="background: white; padding: 25px 20px; border-radius: 12px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            <div style="font-size: 36px; margin-bottom: 10px;">🔒</div>
+            <h2 style="color:#1e293b; font-size: 16px; margin-bottom: 6px; font-weight: bold;">তাজ টেলিকম সিকিউরিটি</h2>
+            <p style="color:#64748b; font-size: 11px; margin-bottom: 20px;">ড্যাশবোর্ডে প্রবেশ করতে সঠিক পিন কোড দিন</p>
+            
+            <!-- inputmode="numeric" শুধুমাত্র নাম্বার প্যাড কিবোর্ড নিয়ে আসবে -->
+            <input type="password" id="app-password" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="•••••" style="width: 100%; padding: 12px; font-size: 22px; border: 2px solid #cbd5e1; border-radius: 8px; text-align: center; margin-bottom: 15px; outline: none; letter-spacing: 6px; font-weight: bold; color: #1e293b; background: #f8fafc;" onkeydown="if(event.key==='Enter') verifyAdminPin()">
+            
+            <button onclick="verifyAdminPin()" style="background-color:#2563eb; color:white; font-size:13px; font-weight:bold; padding: 12px; border-radius: 8px; width:100%; border:none; cursor:pointer; display: flex; align-items: center; justify-content: center;">প্রবেশ করুন</button>
+            <p id="pin-error-msg" style="color:#ef4444; font-size:11px; margin-top:12px; display:none; font-weight: bold;">❌ ভুল পিন কোড! আবার চেষ্টা করুন।</p>
+        </div>
+    </div>
+
     <header>TAJ TELECOM</header>
     <div id="sync-banner" class="sync-loading">⏳ ডাটা লোড করা হচ্ছে...</div>
 
@@ -395,6 +410,21 @@
 
         let selectedPaymentMethod = "নগদ"; let categoryToggleStates = {}; let activeBakiTargetIndex = null; let activeSaleTargetIndex = null; let deleteTargetIndex = null;
 
+        // 🔒 পিন কোড ভেরিফিকেশন ফাংশন
+        function verifyAdminPin() {
+            const pinInput = document.getElementById('app-password');
+            const errorMsg = document.getElementById('pin-error-msg');
+            
+            // আপনার দেওয়া নির্দিষ্ট পাসওয়ার্ড: 14212
+            if (pinInput.value === "14212") {
+                document.getElementById('login-overlay').style.display = 'none';
+            } else {
+                errorMsg.style.display = 'block';
+                pinInput.value = "";
+                pinInput.focus();
+            }
+        }
+
         // 🇧🇩 Bangladesher local timezone fixed function
         function getLocalDateString() {
             const now = new Date();
@@ -420,7 +450,7 @@
             fetch(WEB_APP_URL, {
                 method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ sales: saleRecords, baki: bakiRecords, required: database, stock: stockDatabase })
-            }).then(() => { updateSyncStatus('success', 'ড্রাইভ ব্যাকআপ সফল'); }).catch(err => { updateSyncStatus('error', 'ব্যাকআপ ফেল্ড'); console.error(err); });
+            }).then(() => { updateSyncStatus('success', 'ড্রাইভバックアップ সফল'); }).catch(err => { updateSyncStatus('error', 'ব্যাকআপ ফেল্ড'); console.error(err); });
         }
 
         function fetchFromCloud() {
@@ -437,6 +467,8 @@
         window.onload = function() {
             const today = getLocalDateString(); if(document.getElementById('baki-date')) document.getElementById('baki-date').value = today;
             syncDropdowns(); renderRequiredList(); renderStockList(); renderBakiList(); renderSalesList(); updateHomeStats(); fetchFromCloud();
+            // পেজ লোড হওয়ার সাথে সাথে পিন ইনপুট বক্সে ফোকাস করবে
+            document.getElementById('app-password').focus();
         };
 
         function updateHomeStats() {
