@@ -98,14 +98,12 @@
 </head>
 <body>
 
-    <!-- 🔒 পিন লক স্ক্রিন ওভারলে (ম্যাচিং ডার্ক থিম সহ) -->
     <div id="login-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background-color:#1e293b; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
         <div style="background: white; padding: 25px 20px; border-radius: 12px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
             <div style="font-size: 36px; margin-bottom: 10px;">🔒</div>
             <h2 style="color:#1e293b; font-size: 16px; margin-bottom: 6px; font-weight: bold;">তাজ টেলিকম সিকিউরিটি</h2>
             <p style="color:#64748b; font-size: 11px; margin-bottom: 20px;">ড্যাশবোর্ডে প্রবেশ করতে সঠিক পিন কোড দিন</p>
             
-            <!-- inputmode="numeric" শুধুমাত্র নাম্বার প্যাড কিবোর্ড নিয়ে আসবে -->
             <input type="password" id="app-password" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="•••••" style="width: 100%; padding: 12px; font-size: 22px; border: 2px solid #cbd5e1; border-radius: 8px; text-align: center; margin-bottom: 15px; outline: none; letter-spacing: 6px; font-weight: bold; color: #1e293b; background: #f8fafc;" onkeydown="if(event.key==='Enter') verifyAdminPin()">
             
             <button onclick="verifyAdminPin()" style="background-color:#2563eb; color:white; font-size:13px; font-weight:bold; padding: 12px; border-radius: 8px; width:100%; border:none; cursor:pointer; display: flex; align-items: center; justify-content: center;">প্রবেশ করুন</button>
@@ -391,17 +389,18 @@
             বাকি খাতা
         </button>
         <button id="nav-required" class="nav-item" onclick="switchScreen('required')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke="width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
             প্রয়োজনীয়
         </button>
         <button id="nav-stock" class="nav-item" onclick="switchScreen('stock')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke="width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
             স্টক
         </button>
     </nav>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzNx8quMGHNBOUSVoVQW3RsYG66YF-JnduWiBDkfvTuuEgA6ar7uA1F_KivPR-9yAE/exec";
+        // 🔗 আপনার প্রেরিত নতুন লাইভ ওয়েব অ্যাপ লিঙ্ক এখানে সফলভাবে প্রতিস্থাপন করা হয়েছে 
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwvsDLCWQvYksGP4mi6i7cKz46iRrHUnu9zUAxRs35shY081u9-TXV0QwiHwRpWnfFa/exec";
 
         let database = JSON.parse(localStorage.getItem('taj_database')) || {}; 
         let stockDatabase = JSON.parse(localStorage.getItem('taj_stockDatabase')) || {}; 
@@ -450,7 +449,7 @@
             fetch(WEB_APP_URL, {
                 method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ sales: saleRecords, baki: bakiRecords, required: database, stock: stockDatabase })
-            }).then(() => { updateSyncStatus('success', 'ড্রাইভバックアップ সফল'); }).catch(err => { updateSyncStatus('error', 'ব্যাকআপ ফেল্ড'); console.error(err); });
+            }).then(() => { updateSyncStatus('success', 'ড্রাইভ ব্যাকআপ সফল'); }).catch(err => { updateSyncStatus('error', 'ব্যাকআপ ফেল্ড'); console.error(err); });
         }
 
         function fetchFromCloud() {
